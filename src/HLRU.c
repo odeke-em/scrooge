@@ -1,3 +1,4 @@
+// Author: Emmanuel Odeke <odeke@ualberta.ca>
 #include <stdio.h>
 #include "HLRU.h"
 

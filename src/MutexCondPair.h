@@ -1,3 +1,4 @@
+// Author: Emmanuel Odeke <odeke@ualberta.ca>
 #ifndef _MUTEX_COND_PAIR_H
 #define _MUTEX_COND_PAIR_H
   #include <pthread.h>
