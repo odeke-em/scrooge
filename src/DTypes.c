@@ -2,10 +2,14 @@
 #include <stdio.h>
 
 #include "DTypes.h"
+#define DEBUG
 
 int insertConsumer(Producer *prod, Consumer *newCons) {
   if (prod != NULL && newCons != NULL) {
     if (getListSize(prod->consumerLRU) >= prod->maxCapacity) { // Time to purge
+    #ifdef DEBUG
+      printf("\033[32mPurge in progess\033[00m\n");
+    #endif
       prod->consumerLRU = purgeLRU(prod->consumerLRU);
       if (getListSize(prod->consumerLRU) >= prod->maxCapacity) {
 	void *popdConsumer = popHead(prod->consumerLRU);
@@ -13,10 +17,11 @@ int insertConsumer(Producer *prod, Consumer *newCons) {
 	fprintf(stderr, "\033[33mFreeing consumer: %p\033[00m\n", popdConsumer);
       #endif
 	castFreeConsumer(popdConsumer);
-      }
+      } 
       prod->consumerLRU = setTagValue(prod->consumerLRU, 0);
     }
 
+    setConsumerId(&newCons, getListSize(prod->consumerLRU));
     prod->consumerLRU = appendWithFreer(
       prod->consumerLRU, newCons, castFreeConsumer
     );
@@ -31,11 +36,21 @@ Consumer *allocConsumer(void) {
   return (Consumer *)malloc(sizeof(Consumer));
 }
 
+int setConsumerId(Consumer **c, const unsigned int id) {
+  if (c != NULL && *c != NULL) {
+    (*c)->id = id;
+    return 0;
+  } else {
+    return -1;
+  }
+}
+
 Consumer *initConsumer(Consumer *c) {
   if (c == NULL) {
     c = allocConsumer();
   }
 
+  c->id = 0;
   c->mc = NULL;
   c->data = NULL;
   c->callBack = NULL;

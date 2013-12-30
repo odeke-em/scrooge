@@ -13,7 +13,6 @@
 #define PRODUCER_CAPACITY 5
 #define DEFAULT_PRODUCER_CAPACITY 10
 
-#define DEBUG
 
 void *consume(void *pack) {
   LRU *results = NULL;
@@ -37,7 +36,10 @@ void *consume(void *pack) {
   return results;
 }
 
-void *generateData(void) {
+void *produce(void *pack) {
+  if (pack != NULL) {
+    ;
+  }
   return NULL;
 }
 
@@ -69,7 +71,7 @@ int main() {
 #endif
 
   int idx;
-  for (idx=0; idx < 8;  ++idx) {
+  for (idx=0; idx < 40;  ++idx) {
     Consumer *cn = createConsumer();
     printf("Insertion: %d\n", insertConsumer(prod, cn));
   }

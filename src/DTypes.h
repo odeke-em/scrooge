@@ -17,6 +17,7 @@
 
   typedef struct {
     void *data; // consumer can't free data assigned to them
+    unsigned int id; // Unique Identifier
     MutexCondPair *mc;
     void * (*callBack)(void *);
   } Consumer;
@@ -26,6 +27,7 @@
   Consumer *initConsumer(Consumer *);
   Consumer *freeConsumer(Consumer *);
 
+  int setConsumerId(Consumer **c, const unsigned int id);
   void castFreeConsumer(void *);
 
   Producer *allocProducer();
