@@ -23,7 +23,7 @@
   }
  
   #define assert(validExpression){\
-    if (! validExpression)\
+    if (! (validExpression))\
       raiseError(validExpression);\
   }
 

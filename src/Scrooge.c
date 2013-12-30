@@ -81,10 +81,10 @@ int main() {
   if (getListSize(prod->consumerLRU)) {
     assert(consumerA);
   } else {
-    assert((consumerA == NULL));
+    assert(consumerA == NULL);
   }
   
-  assert((NULL == consumerB));
+  assert(NULL == consumerB);
 
   printf("consumerA: %p\n", consumerA);
   printf("consumerB: %p\n", consumerB);
