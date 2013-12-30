@@ -33,42 +33,6 @@ MutexCondPair *freeMutexCondPair(MutexCondPair *mcPair) {
   return mcPair;
 }
 
-Consumer *allocConsumer(void) {
-  return (Consumer *)malloc(sizeof(Consumer));
-}
-
-Consumer *initConsumer(Consumer *c) {
-  if (c == NULL) {
-    c = allocConsumer();
-  }
-
-  c->mc = NULL;
-  c->data = NULL;
-  c->callBack = NULL;
-
-  return c;
-}
-
-Consumer *createConsumer(void) {
-  Consumer *c = NULL;
-  c = initConsumer(c);
-
-  return c;
-}
-
-Consumer *freeConsumer(Consumer *c) {
-  if (c != NULL) {
-    MutexCondPair **mcByAddr = &(c->mc);
-    if (mcByAddr != NULL) {
-      *mcByAddr = freeMutexCondPair(*mcByAddr);
-      *mcByAddr = NULL;
-    }
-  }
-
-  return c;
-}
-
-
 #ifdef SAMPLE_MUTEX_COND_PAIR
 int main() {
   return 0;

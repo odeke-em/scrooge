@@ -4,54 +4,16 @@
 #include <stdlib.h>
 
 #include "errors.h"
+#include "DTypes.h"
 #include "Scrooge.h"
 #include "hashList.h"
 #include "list/LRU.h"
-#include "list/list.h"
 #include "MutexCondPair.h"
 
 #define PRODUCER_CAPACITY 5
 #define DEFAULT_PRODUCER_CAPACITY 10
 
 #define DEBUG
-
-Producer *allocProducer() {
-  return (Producer *)malloc(sizeof(Producer));
-}
-
-Producer *initProducer(Producer *prod, const unsigned int capacity) {
-  if (prod == NULL) {
-    prod = allocProducer();
-  }
-
-  if (prod == NULL) raiseError("Run out of memory");
-
-  prod->consumerCount = 0;
-  prod->workGenerate = NULL;
-  prod->maxCapacity = capacity;
-
-  prod->consumerLRU = NULL;
-
-  prod->consumerMap = NULL;
-  prod->consumerMap = initHashListWithSize(prod->consumerMap, capacity);
-  prod->mutexCondList = NULL; 
-  if (capacity) {
-    prod->mutexCondList = \
-      (MutexCondPair **)malloc(sizeof(MutexCondPair *) * capacity);
-
-    MutexCondPair **mcIt   = prod->mutexCondList,
-		  **mcEnd  = mcIt + capacity;
-
-    while (mcIt != mcEnd) {
-      *mcIt = NULL;
-      ++mcIt;
-    }
-  } else {
-    ;
-  }
-
-  return prod;
-}
 
 void *consume(void *pack) {
   LRU *results = NULL;
@@ -73,35 +35,6 @@ void *consume(void *pack) {
   }
 
   return results;
-}
-
-Producer *destroyProducer(Producer *prod) {
-  if (prod != NULL) {
-    if (prod->consumerMap != NULL) {
-      destroyHashList(prod->consumerMap);
-      prod->consumerMap = NULL;
-    }
-
-    if (prod->consumerLRU != NULL) {
-      destroyList(prod->consumerLRU);
-      prod->consumerLRU = NULL;
-    }
-
-    if (prod->mutexCondList != NULL) {
-      int mIndex;
-      for (mIndex = 0; mIndex < prod->maxCapacity; ++mIndex) {
-	prod->mutexCondList[mIndex] = \
-	  freeMutexCondPair(prod->mutexCondList[mIndex]);
-      }
-
-      free(prod->mutexCondList);
-    }
-
-    free(prod);
-    prod = NULL;
-  }
-
-  return prod;
 }
 
 void *generateData(void) {
