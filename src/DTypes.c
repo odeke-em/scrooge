@@ -122,6 +122,19 @@ Producer *initProducer(Producer *prod, const unsigned int capacity) {
   return prod;
 }
 
+Consumer *findConsumer(Producer *prod, const unsigned int id) {
+  Consumer *consumerQuery = NULL;
+  if (prod != NULL) {
+    Consumer phonyConsumer;
+    phonyConsumer.id = id;
+    consumerQuery = (Consumer *)lookUpEntry(
+      prod->consumerLRU, &phonyConsumer, consumerComp
+    );
+  }
+
+  return consumerQuery;
+}
+
 Producer *destroyProducer(Producer *prod) {
   if (prod != NULL) {
     if (prod->consumerMap != NULL) {
@@ -149,4 +162,19 @@ Producer *destroyProducer(Producer *prod) {
   }
 
   return prod;
+}
+
+Comparison consumerComp(const void *cA, const void *cB) {
+  if (cA == NULL) {
+    return cB == NULL ? Equal : Greater;
+  } else {
+    const Consumer *ccA = (Consumer *)cA;
+    const Consumer *ccB = (Consumer *)cB;
+
+    if (ccA->id != ccB->id) {
+      return ccA->id < ccB->id ? Less : Greater;
+    } else {
+      return Equal;
+    }
+  }
 }

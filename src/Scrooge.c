@@ -4,7 +4,6 @@
 #include <stdlib.h>
 
 #include "errors.h"
-#include "DTypes.h"
 #include "Scrooge.h"
 #include "hashList.h"
 #include "list/LRU.h"
@@ -12,7 +11,6 @@
 
 #define PRODUCER_CAPACITY 5
 #define DEFAULT_PRODUCER_CAPACITY 10
-
 
 void *consume(void *pack) {
   LRU *results = NULL;
@@ -75,6 +73,21 @@ int main() {
     Consumer *cn = createConsumer();
     printf("Insertion: %d\n", insertConsumer(prod, cn));
   }
+
+  Consumer *consumerA = findConsumer(prod, 1);
+  Consumer *consumerB = findConsumer(prod, getListSize(prod->consumerLRU));
+
+ 
+  if (getListSize(prod->consumerLRU)) {
+    assert(consumerA);
+  } else {
+    assert((consumerA == NULL));
+  }
+  
+  assert((NULL == consumerB));
+
+  printf("consumerA: %p\n", consumerA);
+  printf("consumerB: %p\n", consumerB);
 
   prod = destroyProducer(prod); 
   return 0;

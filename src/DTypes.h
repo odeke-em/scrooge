@@ -34,7 +34,10 @@
   Producer *initProducer(Producer *prod, const unsigned int capacity);
   Producer *destroyProducer(Producer *prod);
 
+  Comparison consumerComp(const void *, const void *);
+
   int insertConsumer(Producer *prod, Consumer *cons);
   int insertJob(Producer *prod, void *job, const int jobId);
 
+  Consumer *findConsumer(Producer *prod, const unsigned int id);
 #endif
