@@ -41,6 +41,7 @@
 
   // Returns the number of values freed
   long int destroyHashList(HashList *hl);
+  void insertElem(HashList *hl, void *data, const hashValue hashCode);
 
   // Miscellaneous
   hashValue pjwCharHash(const char *srcW);

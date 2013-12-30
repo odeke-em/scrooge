@@ -3,6 +3,6 @@
 #define _HLRU_H
   #include "hashList.h"
 
-  #define Cache LRU
-  typedef HashList LRU;
+  #define HCache HLRU
+  typedef HashList HLRU;
 #endif

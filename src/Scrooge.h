@@ -2,10 +2,12 @@
 #ifndef _SCROOGE_H
 #define _SCROOGE_H
   #include "HLRU.h"
+  #include "list/LRU.h"
   #include "MutexCondPair.h"
 
   typedef struct {
-    LRU *consumerList;
+    HashList *consumerMap;
+    LRU *consumerLRU;
     unsigned int maxCapacity;
     unsigned int consumerCount;
     MutexCondPair **mutexCondList; 
