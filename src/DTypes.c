@@ -3,19 +3,27 @@
 
 #include "DTypes.h"
 
-int insertConsumer(Producer *prod, Consumer *cons) {
-  if (prod != NULL && cons != NULL) {
-    if (prod->consumerCount >= prod->maxCapacity) { // Time to purge
+int insertConsumer(Producer *prod, Consumer *newCons) {
+  if (prod != NULL && newCons != NULL) {
+    if (getListSize(prod->consumerLRU) >= prod->maxCapacity) { // Time to purge
       prod->consumerLRU = purgeLRU(prod->consumerLRU);
-
-      if (getListSize(prod->consumerLRU) == prod->consumerCount) {
-	Consumer *popdConsumer =\
-	  (Consumer *)listPop(&(prod->consumerLRU->head));
+      if (getListSize(prod->consumerLRU) >= prod->maxCapacity) {
+	void *popdConsumer = popHead(prod->consumerLRU);
+      #ifdef DEBUG 
+	fprintf(stderr, "\033[33mFreeing consumer: %p\033[00m\n", popdConsumer);
+      #endif
+	castFreeConsumer(popdConsumer);
       }
+      prod->consumerLRU = setTagValue(prod->consumerLRU, 0);
     }
-    return -1;
-  } else {
+
+    prod->consumerLRU = appendWithFreer(
+      prod->consumerLRU, newCons, castFreeConsumer
+    );
+
     return 0;
+  } else {
+    return -1;
   }
 }
 
@@ -52,6 +60,13 @@ Consumer *freeConsumer(Consumer *c) {
   }
 
   return c;
+}
+
+void castFreeConsumer(void *c) {
+  if (c != NULL) {
+    Consumer *castConsumer = (Consumer *)c;
+    castConsumer = freeConsumer(castConsumer);
+  }
 }
 
 Producer *allocProducer() {

@@ -85,8 +85,8 @@ Node *createNewNode(void) {
 List *initList(List *l) {
   if (l != NULL) {
     l->size = 0;
-    l->head = initNode(l->head);
-    l->tail = initNode(l->tail);
+    l->head = NULL;
+    l->tail = NULL;
   }
 
   return l;
@@ -106,10 +106,14 @@ inline List *allocList(void) {
 }
 
 List *append(List *l, void *data) {
-  return appendAndTag(l, data, Heapd);
+  return appendAndTag(l, data, Heapd, NULL);
 }
 
-List *appendAndTag(List *l, void *data, Tag tag) {
+List *appendWithFreer(List *l, void *data, void (*freer)(void *)) {
+  return appendAndTag(l, data, Heapd, freer);
+}
+
+List *appendAndTag(List *l, void *data, Tag tag, void (*freer)(void *)) {
   if (l == NULL) {
     l = createNewList();
   }
@@ -240,6 +244,16 @@ Node *find(List *l, void *query, Comparator matchFunc) {
   }
 
   return result;
+}
+
+void *popHead(List *l) {
+  void *popd = NULL;
+  if (l != NULL && l->head != NULL) {
+    popd = listPop(&l->head);
+    --l->size;
+  }
+
+  return popd;
 }
 
 List *removeElem(List *l, void *query, Comparator matchFunc) {

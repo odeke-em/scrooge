@@ -52,7 +52,7 @@ int insertJob(Producer *prod, void *job, const int jobId) {
 
 int main() {
   Producer *prod = NULL;
-  prod = initProducer(prod, PRODUCER_CAPACITY);
+  prod = initProducer(prod, 5);
 #ifdef INSERT_JOB
 #ifdef DEBUG
   printf("Scrooge!!\n");
@@ -67,6 +67,12 @@ int main() {
     insertJob(prod, intPtr, i);
   }
 #endif
+
+  int idx;
+  for (idx=0; idx < 8;  ++idx) {
+    Consumer *cn = createConsumer();
+    printf("Insertion: %d\n", insertConsumer(prod, cn));
+  }
 
   prod = destroyProducer(prod); 
   return 0;

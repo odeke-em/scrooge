@@ -26,6 +26,8 @@
   Consumer *initConsumer(Consumer *);
   Consumer *freeConsumer(Consumer *);
 
+  void castFreeConsumer(void *);
+
   Producer *allocProducer();
   Producer *initProducer(Producer *prod, const unsigned int capacity);
   Producer *destroyProducer(Producer *prod);
