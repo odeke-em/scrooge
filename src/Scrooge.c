@@ -13,6 +13,8 @@
 #define DEFAULT_PRODUCER_CAPACITY 10
 
 void *consume(void *pack) {
+  // Returns results starting in reverse 
+  // chronological order ie latest first
   LRU *results = NULL;
   if (pack != NULL) {
     Consumer *cons = (Consumer *)pack;

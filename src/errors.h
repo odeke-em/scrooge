@@ -24,7 +24,7 @@
  
   #define assert(validExpression){\
     if (! (validExpression))\
-      raiseError(validExpression);\
+      raiseError((validExpression));\
   }
 
   #define raiseError(args) {\

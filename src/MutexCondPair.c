@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
+
+#include "errors.h"
 #include "MutexCondPair.h"
 
 #define execIfNotNull(var, func) {\
@@ -21,6 +23,25 @@ MutexCondPair *initMutexCondPair(MutexCondPair *mcPair) {
   mcPair->condVar = NULL;
 
   return mcPair;
+}
+
+MutexCondPair *createMutexCondPair(void) {
+  MutexCondPair *freshMC = NULL;
+  freshMC = initMutexCondPair(freshMC);
+  freshMC->mutex = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
+  freshMC->condVar = (pthread_cond_t *)malloc(sizeof(pthread_cond_t));
+
+  int errCode = 0;
+  if ((errCode = pthread_cond_init(freshMC->condVar, NULL))) {
+    raiseError(errCode);
+  }
+
+  if ((errCode = pthread_mutex_init(freshMC->mutex, NULL))) {
+    raiseError(errCode);
+  }
+    
+
+  return freshMC;
 }
 
 MutexCondPair *freeMutexCondPair(MutexCondPair *mcPair) {
