@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h> // For memset
 
 #include "errors.h"
 #include "Scrooge.h"
@@ -11,6 +12,22 @@
 
 #define PRODUCER_CAPACITY 5
 #define DEFAULT_PRODUCER_CAPACITY 10
+
+HashList *map(List *dataSet, void *(*func)(void *)) {
+  HashList *results = NULL;
+  if (dataSet != NULL && func != NULL) {
+    results = initHashListWithSize(results, getListSize(dataSet));
+    Node *it = dataSet->head, *end = dataSet->tail; 
+    unsigned int elemIndex = 0;
+    while (it != NULL) {
+      insertElem(results, func(it->data), elemIndex);
+      it = getNextNode(it); 
+      ++elemIndex;
+    }
+  }
+
+  return results;
+}
 
 void *consume(void *pack) {
   // Returns results starting in reverse 
@@ -38,7 +55,7 @@ void *consume(void *pack) {
 
 void *produce(void *pack) {
   if (pack != NULL) {
-    ;
+    // Incomplete
   }
   return NULL;
 }
@@ -52,10 +69,23 @@ int insertJob(Producer *prod, void *job, const int jobId) {
   return 0;
 }
 
+List *squareToTen(void *start) {
+  List *resultL = NULL;
+  if (start != NULL) {
+    int iStart = *(int *)start, end = iStart + 10;
+    while (iStart <= end) {
+      int *sqValue = (int *)malloc(sizeof(int));
+      *sqValue = (iStart *2);
+      resultL = appendAndTag(resultL, sqValue, Heapd, free);
+      ++iStart;
+    }
+  }
+
+  return resultL;
+}
+
 int main() {
-  Producer *prod = NULL;
-  prod = initProducer(prod, 5);
-#ifdef INSERT_JOB
+  #ifdef INSERT_JOB
 #ifdef DEBUG
   printf("Scrooge!!\n");
 #endif
@@ -69,6 +99,10 @@ int main() {
     insertJob(prod, intPtr, i);
   }
 #endif
+
+#ifdef CONSUMER_PRODUCER_DEMO
+  Producer *prod = NULL;
+  prod = initProducer(prod, 5);
 
   int idx;
   for (idx=0; idx < 40;  ++idx) {
@@ -92,5 +126,39 @@ int main() {
   printf("consumerB: %p\n", consumerB);
 
   prod = destroyProducer(prod); 
+#endif
+
+  List *l = NULL;
+  int i;
+  for (i=0; i < 990000; i += 1) {
+    int *intPtr = (int *)malloc(sizeof(int));
+    *intPtr = i;
+  #ifdef DEBUG
+    printf("\033[94mValue: %d\n", i);
+  #endif
+    l = append(l, intPtr);
+  }
+
+  HashList *sqrdH = map(l, (void *)squareToTen);
+
+  Element **it = sqrdH->list, **end = it + sqrdH->size;
+
+  while (it < end) {
+    if (*it != NULL) {
+    #ifdef SHOW_RESULTS
+      printList((*it)->value);
+      printf("\n");
+    #endif
+      destroyList((*it)->value);
+      (*it)->value = NULL;
+    }
+    ++it;
+  }
+
+  printf("len: %d\n", sqrdH->size);
+
+  destroyList(l);
+  destroyHashList(sqrdH);
+
   return 0;
 }

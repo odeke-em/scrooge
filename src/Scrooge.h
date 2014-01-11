@@ -5,4 +5,6 @@
   void *consume(void *pack);
   void *produce(void *pack);
   int insertJob(Producer *prod, void *job, const int jobId);
+
+  HashList *map(List *dataSet, void *(*func)(void *));
 #endif
