@@ -75,7 +75,7 @@ List *squareToTen(void *start) {
     int iStart = *(int *)start, end = iStart + 10;
     while (iStart <= end) {
       int *sqValue = (int *)malloc(sizeof(int));
-      *sqValue = (iStart *2);
+      *sqValue = (iStart * iStart);
       resultL = appendAndTag(resultL, sqValue, Heapd, free);
       ++iStart;
     }
