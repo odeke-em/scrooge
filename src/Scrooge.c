@@ -84,6 +84,10 @@ List *squareToTen(void *start) {
   return resultL;
 }
 
+List *merge(const char *fmt, ...) {
+  ;
+}
+
 int main() {
   #ifdef INSERT_JOB
 #ifdef DEBUG
@@ -130,35 +134,42 @@ int main() {
 
   List *l = NULL;
   int i;
-  for (i=0; i < 990000; i += 1) {
+  for (i=0; i < 90000; i += 11) {
     int *intPtr = (int *)malloc(sizeof(int));
     *intPtr = i;
   #ifdef DEBUG
     printf("\033[94mValue: %d\n", i);
   #endif
-    l = append(l, intPtr);
+    l = appendAndTag(l, intPtr, Heapd, free);
   }
 
   HashList *sqrdH = map(l, (void *)squareToTen);
 
   Element **it = sqrdH->list, **end = it + sqrdH->size;
+  List *l1 = it[0]->value;
+  List *l2 = it[1]->value;
+  List *l3 = it[2]->value;
+  List *l4 = it[3]->value;
+  List *l7000 = it[6999]->value;
 
-  while (it < end) {
+  List *merged = multiMerge(5, l4, l1, l7000, l3, l2, intPtrComp);
+  printf("After merging: \n");
+  printList(merged);
+  printf("\n");
+  destroyList(merged);
+
+  for (it=sqrdH->list; it < end; ++it) { 
     if (*it != NULL) {
-    #ifdef SHOW_RESULTS
+    #ifdef SHOW_CONTENT
       printList((*it)->value);
       printf("\n");
     #endif
       destroyList((*it)->value);
       (*it)->value = NULL;
     }
-    ++it;
   }
 
-  printf("len: %d\n", sqrdH->size);
-
-  destroyList(l);
   destroyHashList(sqrdH);
-
+  destroyList(l);
   return 0;
 }

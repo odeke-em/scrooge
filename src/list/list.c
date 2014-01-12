@@ -1,6 +1,7 @@
 // Author: Emmanuel Odeke <odeke@ualberta.ca>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdarg.h>
+#include <stdlib.h>
 #include "errors.h"
 
 #include "list.h"
@@ -228,6 +229,104 @@ void printList(List *l) {
   printf("]");
 }
 
+List *multiMerge(unsigned int count, ...) {
+  // Pass the number of lists to merge, the lists themselves
+  // and the very last argument should be the Comparator
+  List *merged = NULL;
+#ifdef DEBUG
+  printf("Func:: %s\n", __func__);
+#endif
+
+  va_list ap;
+  va_start(ap, count);
+
+  List **lBlock = (List **)malloc(sizeof(List *) * count);
+  List *tmpL = NULL;
+
+  int i=0;
+  while (i < count) {
+    tmpL = va_arg(ap, List *);
+    lBlock[i++] = tmpL;
+  }
+
+  Comparator matchFunc = va_arg(ap, Comparator);
+
+#ifdef DEBUG
+  printf("ap: %p\n", ap);
+#endif
+
+  va_end(ap);
+  if (i) {
+    int popularCount = count, midIndex = i/2, maxCount = i, gallop;
+    int thresholdCount = 0.75 * count;
+    List **minList = NULL;
+    while (popularCount >= thresholdCount) {
+    #ifdef DEBUG
+      for (i=0; i < maxCount; ++i) {
+	printList(lBlock[i]); 
+	printf("\n");
+      }
+      printf("\033[35m\nBlockEntries\n\033[00m");
+    #endif
+
+      popularCount = maxCount;
+      pickMinList: {
+	int minIdx=0;
+	while (minIdx < maxCount) {
+	  minList = lBlock + minIdx;
+	  if (peek(*minList) != NULL) {
+	    break;
+	  } else {
+	    ++minIdx;
+	  }
+	}
+
+	if (peek(*minList) == NULL) {
+	  printf("No more selections for minList can be made\n");
+	  goto cleanUpForReturn;
+	}
+      }
+
+      int gallop = 0, nonEmptyCount = 0;
+      for (i=0; i < maxCount; ++i) {
+	if (peek(lBlock[i]) == NULL) {
+	  --popularCount;
+	} else {
+	  ++nonEmptyCount;
+	  Comparison comp = matchFunc(peek(*minList), peek(lBlock[i]));
+	  if (comp == Equal) {
+	    ++gallop;
+	  } else if (comp == Greater) {
+	    minList = lBlock + i;
+	  }
+	}
+      }
+
+      if (gallop == nonEmptyCount) { // All elements were equal
+	for (i=0; i < maxCount; ++i) {
+	  if (peek(lBlock[i]) != NULL) {
+	    merged = append(merged, popHead(lBlock[i]));
+	  }
+	}
+      } else {
+	merged = append(merged, popHead(*minList));
+      }
+    }
+
+    for (i=0; i < maxCount; ++i) {
+      while (peek(lBlock[i]) != NULL) {
+	merged = append(merged, popHead(lBlock[i]));
+      }
+    }
+  }
+
+  cleanUpForReturn: {
+    free(lBlock);
+  }
+  
+  return merged;
+}
+
 Node *find(List *l, void *query, Comparator matchFunc) {
   Node *result = NULL;
   if (l != NULL && matchFunc != NULL) {
@@ -236,8 +335,8 @@ Node *find(List *l, void *query, Comparator matchFunc) {
       if (it == NULL) break;
     
       if (matchFunc(it->data, query) == Equal) {
-	result = it;
-	break;
+        result = it;
+        break;
       }
       it = it->next;
     } while (it != end);

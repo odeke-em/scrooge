@@ -1,6 +1,7 @@
 // Author: Emmanuel Odeke <odeke@ualberta.ca>
 #ifndef _LIST_H
 #define _LIST_H
+  #include <stdarg.h>
   typedef enum {
     Less=-1, Equal=0, Greater=1
   } Comparison;
@@ -62,6 +63,10 @@
   // Miscellaneous
   void printList(List *l);
   Comparison intPtrComp(const void *i1, const void *i2);
+
+  // Pass the number of lists to merge, the lists themselves and
+  // the very last argument should be the Comparator
+  List *multiMerge(unsigned int count, ...);
 
   void swap(void **a, void **b);
 #endif
