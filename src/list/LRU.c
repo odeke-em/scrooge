@@ -20,6 +20,10 @@ Cache *setTagValue(Cache *c, unsigned int tagValue) {
 }
 
 Cache *purgeLRU(Cache *c) {
+  return purgeAndSave(c, NULL);
+}
+
+Cache *purgeAndSave(Cache *c, Cache **purgedSav) {
   if (c != NULL) {
     Node *it = c->head, *end = c->tail, *prev = c->head;
     while (it != NULL) {
@@ -30,7 +34,11 @@ Cache *purgeLRU(Cache *c) {
 	  printf("Purging: %d\n", *(int *)it->data);
 	#endif
 	  --c->size;
-	  free(it->data);
+          if (purgedSav != NULL) { 
+	    *purgedSav = append(*purgedSav, it->data);
+          } else {
+            free(it->data);
+          }
 	  it->data = NULL;
 	}
 
@@ -115,11 +123,16 @@ int main() {
   printf("After second set of accesses\n");
   printList(c);
 
-  c = purgeLRU(c);
-  printf("\nAfter purge 2\n");
+  Cache *purgeSav=NULL;
+  c = purgeAndSave(c, &purgeSav);
+  printf("\nAfter purge 2:: Fresh list\n");
   printList(c);
   printf("\n");
+  printf("Purged and saved\n");
+  printList(purgeSav);
+  printf("\n");
 
+  destroyList(purgeSav);
   destroyList(c);
   return 0;
 }
