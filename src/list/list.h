@@ -69,4 +69,7 @@
   List *multiMerge(unsigned int count, ...);
 
   void swap(void **a, void **b);
+  
+  // Map version for lists
+  List *lmap(List *src, void *(*func)(void *));
 #endif

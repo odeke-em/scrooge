@@ -382,6 +382,18 @@ List *removeElem(List *l, void *query, Comparator matchFunc) {
   return l;
 }
 
+List *lmap(List *src, void *(*func)(void *, ...)) {
+  List *results = NULL;
+  if (src != NULL && func != NULL) {
+    Node *head = src->head;
+    while (head != NULL) {
+      results = append(results, func(head->data));
+      head = getNextNode(head);
+    }
+  }
+
+  return results;
+}
 
 #ifdef SAMPLE_RUN
 int main() {
