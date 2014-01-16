@@ -52,7 +52,9 @@ Consumer *initConsumer(Consumer *c) {
 
   c->id = 0;
   c->mc = NULL;
+  c->ready = 0;
   c->data = NULL;
+  c->sourceId = 0;
   c->callBack = NULL;
 
   return c;

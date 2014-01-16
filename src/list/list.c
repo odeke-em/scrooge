@@ -382,7 +382,7 @@ List *removeElem(List *l, void *query, Comparator matchFunc) {
   return l;
 }
 
-List *lmap(List *src, void *(*func)(void *, ...)) {
+List *lmap(List *src, void *(*func)(void *)) {
   List *results = NULL;
   if (src != NULL && func != NULL) {
     Node *head = src->head;

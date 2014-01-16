@@ -7,4 +7,8 @@
   int insertJob(Producer *prod, void *job, const int jobId);
 
   HashList *map(List *dataSet, void *(*func)(void *));
+
+  HashList *pMap(
+    HashList *dataSet, void *(*func)(void *), const unsigned int thCount
+  );
 #endif

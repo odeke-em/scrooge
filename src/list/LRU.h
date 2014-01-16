@@ -11,6 +11,7 @@
 
   // Merely invokes purgeAndSave but with a NULL argument for purgedSav 
   Cache *purgeLRU(Cache *c);
+  Cache *purgeAndSaveByQuantify(Cache *c, Cache **purgedSav, int (*quantifier)(void *));
  
   Cache *setTagValue(Cache *c, unsigned int tagValue);
 

@@ -24,11 +24,14 @@ Cache *purgeLRU(Cache *c) {
 }
 
 Cache *purgeAndSave(Cache *c, Cache **purgedSav) {
+  return purgeAndSaveByQuantify(c, purgedSav, NULL);
+}
+
+Cache *purgeAndSaveByQuantify(Cache *c, Cache **purgedSav, int (*quantifier)(void *)) {
   if (c != NULL) {
     Node *it = c->head, *end = c->tail, *prev = c->head;
     while (it != NULL) {
-      if (it->tag == 0) { // Hasn't been accessed since the last cycle
-   
+      if ((quantifier && quantifier(it->data)) || it->tag == 0) { // Hasn't been accessed since the last cycle
 	if (it->data != NULL) {
 	#ifdef DEBUG
 	  printf("Purging: %d\n", *(int *)it->data);

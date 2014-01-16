@@ -17,8 +17,10 @@
 
   typedef struct {
     void *data; // consumer can't free data assigned to them
-    unsigned int id; // Unique Identifier
     MutexCondPair *mc;
+    unsigned int id; // Unique Identifier
+    unsigned int ready:1; // Set once work is being done
+    unsigned int sourceId;
     void * (*callBack)(void *);
   } Consumer;
 
