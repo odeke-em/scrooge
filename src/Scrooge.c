@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h> // For memset
-#include <pthread.h> // For memset
+#include <pthread.h>
 
 #include "errors.h"
 #include "Scrooge.h"
