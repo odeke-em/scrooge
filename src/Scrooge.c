@@ -17,21 +17,17 @@
 void *consumeElem(void *d) {
   void *result = NULL;
   if (d != NULL) {
-    Consumer *c = (Consumer *)d;
-    if (c->callBack != NULL && c->data != NULL) {
-      Element **e = (Element **)c->data;
-      List *resList = NULL;
-      resList = c->callBack((*e)->value);
-      result = (void *)resList;
+    DictSliceAndFunc *dSlice = (DictSliceAndFunc *)d;
+    Element **src = dSlice->src,
+            **dest = dSlice->dest;
+    unsigned int i;
+    void *(*func)(void *) = dSlice->func;
+    for (i=dSlice->startIndex; i < dSlice->endIndex; ++i) {
+      dest[i] = addToHead(dest[i], func(src[i]->value));
     }
-
-    c->ready= 1;
   }
-  return result;
-}
 
-int readyCheck(void *data) {
-  return data == NULL ? 0 : (((Consumer *)data)->ready == 1);
+  return result;
 }
 
 HashList *pMap(HashList *dataSet, void *(*func)(void *), unsigned int thCount) {
@@ -46,68 +42,44 @@ HashList *pMap(HashList *dataSet, void *(*func)(void *), unsigned int thCount) {
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
   #endif
 
-    LRU *activeConsumers = NULL, *idleConsumers = NULL;
-    int i;
-    for (i=0; i < thCount && i < dataSet->size; ++i) {
-      Consumer *c = createConsumer();
-      c->id = c->sourceId = i;
-      c->data = get(dataSet, i);
-      c->callBack = func;
-      c->ready = 0;
-     
-      pthread_create(&threadL[c->sourceId], &attr, consumeElem, (void *)c); 
-      activeConsumers = appendAndTag(
-        activeConsumers, c, Heapd, (void *)freeConsumer
-      );
-    }
+    unsigned int chunkSz = (thCount > 1 ? dataSet->size/thCount : dataSet->size);
+    DictSliceAndFunc sliceArray[thCount];
+    unsigned int startIndex, endIndex, endFound, thIndex;
 
-    while (i < dataSet->size) {
-      // First phase find all Consumers that are done with their tasks
-      activeConsumers = purgeAndSaveByQuantify(
-        activeConsumers, &idleConsumers, readyCheck
-      );
-      // Pop as many from the idleConsumers list
-      while (! isEmpty(idleConsumers)) {
-	Consumer *readyCon = (Consumer *)popHead(idleConsumers);
-	if (readyCon != NULL) {
-	  void *resultSav = NULL;
+    thIndex = endFound = 0;
+    startIndex = endIndex = 0;
 
-	  if (pthread_join(threadL[readyCon->sourceId], &resultSav)) {
-	    raiseError("Failed to join thread");
-	  }
-	  insertElem(mapped, resultSav, readyCon->id);
+    while (! endFound) {
+      startIndex  = endIndex;
+      endIndex   += chunkSz + 1; // Ceiling
 
-	  // Fresh now for re-deployment
-          // No need to reset the threadId
-	  readyCon->data = get(dataSet, i);
-	  readyCon->ready = 0;
-	  readyCon->id = i;
-	  activeConsumers = appendAndTag(
-            activeConsumers, readyCon, Heapd, (void *)freeConsumer
-          );
-
-          pthread_create(
-            &threadL[readyCon->sourceId], &attr, consumeElem, (void *)readyCon
-          ); 
-          ++i;
-	}
-      }
-    }
-
-    while (! isEmpty(activeConsumers)) {
-      Consumer *activCon = (Consumer *)popHead(activeConsumers);
-      if (activCon != NULL) {
-	void *resultSav = NULL;
-	if (pthread_join(threadL[activCon->id], &resultSav)) {
-	  raiseError("Failed to join thread");
-	}
-	insertElem(mapped, resultSav, activCon->id);
+      if (endIndex  >= dataSet->size) {
+        endIndex = dataSet->size;
+        endFound = 1;
       }
 
-      freeConsumer(activCon);
+      DictSliceAndFunc *dSlice = &sliceArray[thIndex];
+      dSlice->src = dataSet->list;
+      dSlice->dest = mapped->list;
+      dSlice->func = func;
+      dSlice->startIndex = startIndex;
+      dSlice->endIndex = endIndex;
+    #ifdef DEBUG
+      printf("start: %d end: %d\n", startIndex, endIndex);
+    #endif
+      pthread_create(&threadL[thIndex], &attr, consumeElem, (void *)dSlice);
+      ++thIndex;
     }
 
-    destroyList(idleConsumers);
+    for (thIndex=0; thIndex < thCount; ++thIndex) {
+    #ifdef DEBUG
+      printf("thIndex: %d\n", thIndex);
+    #endif
+      void *retSav = NULL;
+      if (pthread_join(threadL[thIndex], &retSav)) {
+        raiseError("Failed to join thread");
+      }
+    }
   }
 
   return mapped;
@@ -209,7 +181,7 @@ int main() {
 
 #ifdef CONSUMER_PRODUCER_DEMO
   Producer *prod = NULL;
-  prod = initProducer(prod, 5);
+  prod = initProducer(prod, 9);
 
   int idx;
   for (idx=0; idx < 40;  ++idx) {
@@ -235,13 +207,14 @@ int main() {
   prod = destroyProducer(prod); 
 #endif
 
+// #define SINGLE_TH_MAP
   List *l = NULL;
-  int i, maxValue = 90999;
+  int i, maxValue = 999999;
   HashList *hl = NULL;
   hl = initHashListWithSize(hl, maxValue);
   for (i=0; i < maxValue; i += 1) {
   #ifdef DEBUG
-    printf("\033[94mValue: %d\n", i);
+    printf("\033[95mValue: %d\n", i);
   #endif
   #ifdef SINGLE_TH_MAP
     int *intPtr = (int *)malloc(sizeof(int));
@@ -260,7 +233,7 @@ int main() {
   selectedH = map(l, (void *)squareToTen);
 #else
   printf("pMap selected\n");
-  selectedH = pMap(hl, (void *)squareToTen, 10);
+  selectedH = pMap(hl, (void *)squareToTen, 17);
 #endif
 
   printf("selectedH: %p\n", selectedH);
@@ -277,6 +250,7 @@ int main() {
   printf("\n");
   destroyList(merged);
 
+// #define SHOW_CONTENT
   for (it=selectedH->list; it < end; ++it) { 
     if (*it != NULL) {
     #ifdef SHOW_CONTENT

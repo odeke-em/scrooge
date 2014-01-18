@@ -7,6 +7,17 @@
   #include "MutexCondPair.h"
 
   typedef struct {
+    Element **src, **dest;
+    unsigned int startIndex, endIndex;
+    void *(*func)(void *);
+  } DictSliceAndFunc;
+
+  struct DSlicePair {
+    struct DictSliceAndFunc *srcSlice;
+    struct DictSliceAndFunc *destSlice;
+  };
+
+  typedef struct {
     LRU *consumerLRU;
     HashList *consumerMap;
     unsigned int maxCapacity;
