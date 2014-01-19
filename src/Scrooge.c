@@ -14,6 +14,8 @@
 #define PRODUCER_CAPACITY 5
 #define DEFAULT_PRODUCER_CAPACITY 10
 
+typedef unsigned long int LInt;
+
 void *consumeElem(void *d) {
   void *result = NULL;
   if (d != NULL) {
@@ -42,7 +44,7 @@ HashList *pMap(HashList *dataSet, void *(*func)(void *), unsigned int thCount) {
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
   #endif
 
-    unsigned int chunkSz = (thCount > 1 ? dataSet->size/thCount : dataSet->size);
+    LInt chunkSz = (thCount > 1 ? dataSet->size/thCount : dataSet->size);
     DictSliceAndFunc sliceArray[thCount];
     unsigned int startIndex, endIndex, endFound, thIndex;
 
@@ -101,6 +103,24 @@ HashList *map(List *dataSet, void *(*func)(void *)) {
   return results;
 }
 
+List *hCombine(HashList *dataSet) {
+  List *results = NULL;
+
+  if (dataSet != NULL && dataSet->size) {
+    Element **it = dataSet->list, **end = it + dataSet->size;
+    while (it < end) {
+      while (*it != NULL) {
+        results = appendAndTag(results, (*it)->value, Stackd, NULL);
+        *it  = (*it)->next;
+      }
+      ++it;
+    }
+  }
+
+  return results;
+}
+
+
 void *consume(void *pack) {
   // Returns results starting in reverse 
   // chronological order ie latest first
@@ -145,9 +165,9 @@ int insertJob(Producer *prod, void *job, const int jobId) {
 List *squareToTen(void *start) {
   List *resultL = NULL;
   if (start != NULL) {
-    int iStart = *(int *)start, end = iStart + 10;
+    LInt iStart = *(LInt *)start, end = iStart + 10;
     while (iStart <= end) {
-      int *sqValue = (int *)malloc(sizeof(int));
+      LInt *sqValue = (LInt *)malloc(sizeof(iStart));
       *sqValue = (iStart * iStart);
       resultL = appendAndTag(resultL, sqValue, Heapd, free);
       ++iStart;
@@ -161,10 +181,6 @@ List *squareToTen(void *start) {
 #endif
 
   return resultL;
-}
-
-List *merge(const char *fmt, ...) {
-  ;
 }
 
 int main() {
@@ -207,23 +223,26 @@ int main() {
   prod = destroyProducer(prod); 
 #endif
 
-// #define SINGLE_TH_MAP
   List *l = NULL;
-  int i, maxValue = 999999;
+  LInt i, maxValue = 9999999, incr = 11;
   HashList *hl = NULL;
-  hl = initHashListWithSize(hl, maxValue);
-  for (i=0; i < maxValue; i += 1) {
+
+#ifndef SINGLE_TH_MAP
+  hl = initHashListWithSize(hl, maxValue/incr);
+#endif
+
+  int hIndex = 0;
+
+  for (i=0; i < maxValue; i += incr) {
   #ifdef DEBUG
     printf("\033[95mValue: %d\n", i);
   #endif
-  #ifdef SINGLE_TH_MAP
-    int *intPtr = (int *)malloc(sizeof(int));
+    LInt *intPtr = (LInt *)malloc(sizeof(LInt));
     *intPtr = i;
+  #ifdef SINGLE_TH_MAP
     l = appendAndTag(l, intPtr, Heapd, free);
   #else
-    int *hIntPtr = (int *)malloc(sizeof(int));
-    *hIntPtr = i;
-    insertElem(hl, hIntPtr, i);
+    insertElem(hl, intPtr, hIndex++);
   #endif
   }
 
@@ -233,25 +252,28 @@ int main() {
   selectedH = map(l, (void *)squareToTen);
 #else
   printf("pMap selected\n");
-  selectedH = pMap(hl, (void *)squareToTen, 17);
+  selectedH = pMap(hl, (void *)squareToTen, 4);
 #endif
 
   printf("selectedH: %p\n", selectedH);
   Element **it = selectedH->list, **end = it + selectedH->size;
-  List *l1 = it[0]->value;
-  List *l2 = it[1]->value;
-  List *l3 = it[2]->value;
-  List *l4 = it[3]->value;
-  List *l7000 = it[6999]->value;
 
-  List *merged = multiMerge(5, l4, l1, l7000, l3, l2, intPtrComp);
-  printf("After merging: \n");
-  printList(merged);
-  printf("\n");
-  destroyList(merged);
+  const unsigned int hSz = selectedH->size;
+  if (hSz) {
+    List *lFirst = it[0]->value;
+    List *lTenth = it[hSz/10]->value;
+    List *lHalf = it[hSz/2]->value;
+    List *lQuarter = it[hSz/4]->value;
+
+    List *merged = multiMerge(4, lHalf, lFirst, lQuarter, lTenth, intPtrComp);
+    printf("After merging: \n");
+    printList(merged);
+    printf("\n");
+    destroyList(merged);
+  }
 
 // #define SHOW_CONTENT
-  for (it=selectedH->list; it < end; ++it) { 
+  for (it=selectedH->list; it < end; ++it) {
     if (*it != NULL) {
     #ifdef SHOW_CONTENT
       printList((*it)->value);

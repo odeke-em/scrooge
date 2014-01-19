@@ -11,4 +11,7 @@
   HashList *pMap(
     HashList *dataSet, void *(*func)(void *), const unsigned int thCount
   );
+
+  // Combine the content of each hashList into a single List
+  List *hCombine(HashList *dataSet);
 #endif
