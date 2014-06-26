@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h> // For memset
 #include <pthread.h>
 
@@ -20,8 +21,7 @@ void *consumeElem(void *d) {
   void *result = NULL;
   if (d != NULL) {
     DictSliceAndFunc *dSlice = (DictSliceAndFunc *)d;
-    Element **src = dSlice->src,
-            **dest = dSlice->dest;
+    Element **src = dSlice->src, **dest = dSlice->dest;
     unsigned int i;
     void *(*func)(void *) = dSlice->func;
     for (i=dSlice->startIndex; i < dSlice->endIndex; ++i) {
@@ -89,6 +89,11 @@ HashList *pMap(HashList *dataSet, void *(*func)(void *), unsigned int thCount) {
 
 HashList *map(List *dataSet, void *(*func)(void *)) {
   HashList *results = NULL;
+
+#ifdef DEBUG
+  printf("dataSetPtr: %p func: %p\n", dataSet, func);
+#endif
+
   if (dataSet != NULL && func != NULL) {
     results = initHashListWithSize(results, getListSize(dataSet));
     Node *it = dataSet->head, *end = dataSet->tail; 
@@ -252,7 +257,7 @@ int main() {
   selectedH = map(l, (void *)squareToTen);
 #else
   printf("pMap selected\n");
-  selectedH = pMap(hl, (void *)squareToTen, 4);
+  selectedH = pMap(hl, (void *)squareToTen, sysconf(_SC_NPROCESSORS_CONF));
 #endif
 
   printf("selectedH: %p\n", selectedH);

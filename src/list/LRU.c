@@ -32,33 +32,33 @@ Cache *purgeAndSaveByQuantify(Cache *c, Cache **purgedSav, int (*quantifier)(voi
     Node *it = c->head, *end = c->tail, *prev = c->head;
     while (it != NULL) {
       if ((quantifier && quantifier(it->data)) || it->tag == 0) { // Hasn't been accessed since the last cycle
-	if (it->data != NULL) {
-	#ifdef DEBUG
-	  printf("Purging: %d\n", *(int *)it->data);
-	#endif
-	  --c->size;
-          if (purgedSav != NULL) { 
-	    *purgedSav = append(*purgedSav, it->data);
-          } else {
+        if (it->data != NULL) {
+        #ifdef DEBUG
+          printf("Purging: %d\n", *(int *)it->data);
+        #endif
+          --c->size;
+          if (purgedSav != NULL)
+            *purgedSav = append(*purgedSav, it->data);
+          else
             free(it->data);
-          }
-	  it->data = NULL;
-	}
 
-	if (prev == NULL) {
-	  c->head = prev = it->next;
-	  free(it);
-	  it = prev;
-	} else {
-	  prev = it->next;
-	  it = it->next;
-	}
+          it->data = NULL;
+        }
+
+        if (prev == NULL) {
+          c->head = prev = it->next;
+          free(it);
+          it = prev;
+        } else {
+          prev = it->next;
+          it = it->next;
+        }
       } else {
       #ifdef DEBUG
-	printf("Couldn't purge: %d\n", *(int *)it->data);
+        printf("Couldn't purge: %d\n", *(int *)it->data);
       #endif
-	prev = it;
-	it = it->next;
+        prev = it;
+        it = it->next;
       }
 
       if (it == end) break;
@@ -86,7 +86,8 @@ void *lookUpEntry(Cache *c, void *key, Comparator comp) {
 #ifdef SAMPLE_LRU
 int main() {
   Cache *c = NULL;
-  int i=0;
+  int i;
+
   for (i=0; i < 10; ++i) {
     int *newI = (int *)malloc(sizeof(int));
     *newI = i;
@@ -100,9 +101,8 @@ int main() {
   printf("Before purge 1\n");
   printList(c);
 
-  for (i= 2; i < 8; ++i) {
+  for (i= 2; i < 8; ++i)
     lookUpEntry(c, &i, intPtrComp);
-  }
 
   printf("\nAfter lookUp 1\n");
   printList(c);

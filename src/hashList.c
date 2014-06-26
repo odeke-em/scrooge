@@ -93,10 +93,12 @@ HashList *initHashListWithSize(HashList *hl, const int size) {
   #ifdef DEBUG
     printf("%s:: %d\n", __func__, hl->size);
   #endif
-    if ((hl->list = (Element **)malloc(sizeof(Element *) * hl->size)) == NULL) {
+    hl->list = (Element **)calloc(hl->size, sizeof(Element *));
+    if (hl->list == NULL) {
       free(hl);
       raiseError(
-      "Run out of memory, trying to create space for a hashlist's list attribute"     );
+        "Run out of memory creating space for a hashlist's list attribute"
+      );
     }
 
     // All elements set to NULL
