@@ -21,7 +21,11 @@
     raiseWarning(#errCode);\
     exit(-1);\
   }
- 
+
+  #ifdef assert 
+    #undef assert
+  #endif // assert
+
   #define assert(validExpression){\
     if (! (validExpression))\
       raiseError((validExpression));\
@@ -38,4 +42,4 @@
     if (! expression)\
       throwException(NullPointerException, expression);\
   }
-#endif
+#endif // _ERRORS_H
