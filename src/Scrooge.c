@@ -96,9 +96,9 @@ HashList *map(List *dataSet, void *(*func)(void *)) {
 
   if (dataSet != NULL && func != NULL) {
     results = initHashListWithSize(results, getListSize(dataSet));
-    Node *it = dataSet->head, *end = dataSet->tail; 
+    register Node *it = dataSet->head;
     unsigned int elemIndex = 0;
-    while (it != NULL) {
+    while (it != NULL && it != dataSet->tail) {
       insertElem(results, func(it->data), elemIndex);
       it = getNextNode(it); 
       ++elemIndex;
@@ -136,7 +136,7 @@ void *consume(void *pack) {
     while (1) {
       fprintf(stderr, "Consumer awaiting signal for worker\n");
       printf("mc: %p\n", mc);
-      int status = pthread_cond_wait(mc->condVar, mc->mutex);
+      pthread_cond_wait(mc->condVar, mc->mutex);
       fprintf(stderr, "Consumer received signal to start work\n");
       pthread_mutex_lock(mc->mutex);
 

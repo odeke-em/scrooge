@@ -204,8 +204,8 @@ Element *pop(HashList *hM, const hashValue hashCode) {
 long int destroyHashList(HashList *hl) {
   long int nValueFrees = 0;
   if (hl != NULL) {
-    int i;
     if (hl->list != NULL) {
+      register unsigned int i;
       for (i=0; i < hl->size; ++i) {
 	nValueFrees += destroySList(hl->list[i]);
       }

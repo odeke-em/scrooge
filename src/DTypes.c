@@ -150,7 +150,7 @@ Producer *destroyProducer(Producer *prod) {
     }
 
     if (prod->mutexCondList != NULL) {
-      int mIndex;
+      register unsigned int mIndex;
       for (mIndex = 0; mIndex < prod->maxCapacity; ++mIndex) {
 	prod->mutexCondList[mIndex] = \
 	  freeMutexCondPair(prod->mutexCondList[mIndex]);

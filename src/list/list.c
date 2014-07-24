@@ -83,6 +83,12 @@ Node *createNewNode(void) {
   return newNode;
 }
 
+Node *createNewNodeWithFreer(void (*freer)(void *)) {
+    Node *nd = createNewNode();
+    nd->freeData = freer;
+    return nd;
+}
+
 List *initList(List *l) {
   if (l != NULL) {
     l->size = 0;
@@ -121,18 +127,18 @@ List *appendAndTag(List *l, void *data, Tag tag, void (*freer)(void *)) {
 
   if (l->head == NULL) {
     // First item being added to the list
-    l->head = createNewNode();
+    l->head = createNewNodeWithFreer(freer);
     l->head->data = data;
     l->head->tag = tag;
     l->tail = NULL;
     l->head->next = l->tail;
   } else if (l->tail == NULL) {
-    l->tail = createNewNode(); 
+    l->tail = createNewNodeWithFreer(freer);
     l->tail->data = data;
     l->tail->tag = tag;
     l->head->next = l->tail;
   } else {
-    l->tail->next = createNewNode();
+    l->tail->next = createNewNodeWithFreer(freer);
     l->tail = l->tail->next;
     l->tail->tag = tag;
     l->tail->data = data;
@@ -176,18 +182,11 @@ List *prependAndTag(List *l, void *data, Tag tag) {
   return l;
 }
 
-int freeFromHeadToTail(Node *head, Node *tail) {
-  int freeCount = 0;
-
-  return freeCount;
-}
-
 void destroyList(List *l) {
   if (l != NULL) {
     Node *start = l->head, *end = l->tail, *tmp = NULL;
 
     if (start != NULL) {
-      void (*dataFreer)(void *) = NULL;
       while (start != end) {
 	tmp = start->next;
 	if (start == NULL) break;
@@ -243,7 +242,7 @@ List *multiMerge(unsigned int count, ...) {
   List **lBlock = (List **)malloc(sizeof(List *) * count);
   List *tmpL = NULL;
 
-  int i=0;
+  register unsigned int i=0;
   while (i < count) {
     tmpL = va_arg(ap, List *);
     lBlock[i++] = tmpL;
@@ -257,8 +256,7 @@ List *multiMerge(unsigned int count, ...) {
 
   va_end(ap);
   if (i) {
-    int popularCount = count, midIndex = i/2, maxCount = i, gallop;
-    int thresholdCount = 0.75 * count;
+    unsigned int popularCount = count, maxCount = i, thresholdCount = 0.75 * count;
     List **minList = NULL;
     while (popularCount >= thresholdCount) {
     #ifdef DEBUG
@@ -270,21 +268,20 @@ List *multiMerge(unsigned int count, ...) {
     #endif
 
       popularCount = maxCount;
-      pickMinList: {
-	int minIdx=0;
-	while (minIdx < maxCount) {
-	  minList = lBlock + minIdx;
-	  if (peek(*minList) != NULL) {
-	    break;
-	  } else {
-	    ++minIdx;
-	  }
-	}
+      // Picking min list -- Beginning
+      unsigned int minIdx=0;
+      while (minIdx < maxCount) {
+        minList = lBlock + minIdx;
+        if (peek(*minList) != NULL)
+          break;
+	else
+          ++minIdx;
+      }
+      // Picking min list -- End
 
-	if (peek(*minList) == NULL) {
-	  printf("No more selections for minList can be made\n");
-	  goto cleanUpForReturn;
-	}
+      if (peek(*minList) == NULL) {
+        printf("No more selections for minList can be made\n");
+        goto cleanUpForReturn;
       }
 
       int gallop = 0, nonEmptyCount = 0;

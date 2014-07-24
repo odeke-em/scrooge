@@ -14,7 +14,7 @@
     Tag tag;
     void *data;
     struct Node_ *next;
-    int (*freeData)(void *data);
+    void (*freeData)(void *data);
   } Node;
 
   typedef struct List_ {
@@ -25,8 +25,10 @@
   typedef Comparison (*Comparator)(const void *, const void *);
 
   Node *initNode(Node *);
-  Node *createNewNode(void);
   inline Node *allocNode(void);
+
+  Node *createNewNode(void);
+  Node *createNewNodeWithFreer(void (*freer)(void *));
 
   List *initList(List *);
   List *createNewList(void);
