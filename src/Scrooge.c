@@ -73,13 +73,14 @@ HashList *pMap(HashList *dataSet, void *(*func)(void *), unsigned int thCount) {
       ++thIndex;
     }
 
+    int joinStatus = 0;
     for (thIndex=0; thIndex < thCount; ++thIndex) {
     #ifdef DEBUG
       printf("thIndex: %d\n", thIndex);
     #endif
       void *retSav = NULL;
-      if (pthread_join(threadL[thIndex], &retSav)) {
-        raiseError("Failed to join thread");
+      if (joinStatus = pthread_join(threadL[thIndex], &retSav)) {
+        raiseError("Failed to join thread #%d. Got : %d\n", thIndex, joinStatus);
       }
     }
   }
@@ -229,7 +230,7 @@ int main() {
 #endif
 
   List *l = NULL;
-  LInt i, maxValue = 9999999, incr = 11;
+  LInt i, maxValue = 99999999, incr = 20;
   HashList *hl = NULL;
 
 #ifndef SINGLE_TH_MAP

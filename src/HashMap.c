@@ -56,6 +56,8 @@ HashMap *pop(HashMap *hm, const ULInt hash, void (*prevFreer)(void *), const voi
     return hm;
 }
 
+
+#ifdef _EXAMINE_HASHMAP_
 int main() {
     HashMap *hm = newHashMap(10);
     hm = put(hm, 9, (void *)hm, 0);
@@ -65,3 +67,4 @@ int main() {
     destroyHashMap(hm);
     return 0;
 }
+#endif

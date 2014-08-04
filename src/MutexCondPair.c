@@ -33,11 +33,11 @@ MutexCondPair *createMutexCondPair(void) {
 
   int errCode = 0;
   if ((errCode = pthread_cond_init(freshMC->condVar, NULL))) {
-    raiseError(errCode);
+    raiseError("Failed to init mutex, got back errCode: %d\n", errCode);
   }
 
   if ((errCode = pthread_mutex_init(freshMC->mutex, NULL))) {
-    raiseError(errCode);
+    raiseError("Failed to init mutex, got back errCode: %d\n", errCode);
   }
     
 
