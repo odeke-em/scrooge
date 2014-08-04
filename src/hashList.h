@@ -26,8 +26,8 @@
   } Element;
 
   typedef struct {
-    int size; 
     int capacity; 
+    unsigned int size; 
     int averageElemLen;
     Bool allowCollisions;
     Element **list;
